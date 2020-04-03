@@ -1,0 +1,14 @@
+[package]
+name = "clippy-insights"
+version = "0.1.0"
+authors = ["Fredrik Larsson <nossralf@gmail.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+serde_json = "1.0.48"
+reqwest = { version = "0.10.3", features = ["blocking", "json"] }
+code_insights = { git = "https://github.com/nossralf/code-insights-rs/" }
+structopt = "0.3.11"
+git2 = "0.13.1"
