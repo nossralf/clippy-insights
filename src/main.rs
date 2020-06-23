@@ -1,9 +1,9 @@
+use anyhow::Result;
 use git2::Repository;
 use serde_json::Value;
 use std::env;
 use std::path::PathBuf;
 use std::process::{Command, Stdio};
-use std::string::FromUtf8Error;
 use structopt::StructOpt;
 
 use code_insights::{Annotation, AnnotationBuilder, Annotations, ReportBuilder, Severity};
@@ -23,7 +23,7 @@ struct Options {
     slug: String,
 }
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
+fn main() -> Result<()> {
     let options = Options::from_args();
 
     let cwd = env::current_dir()?;
@@ -39,8 +39,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let report = ReportBuilder::new("Clippy")
         .logo_url("https://www.rust-lang.org/logos/rust-logo-blk.svg")
-        .build()
-        .unwrap();
+        .build()?;
 
     let client = reqwest::blocking::Client::new();
     let res = client
@@ -56,7 +55,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         options.url, options.project, options.slug, head
     );
 
-    let annotations: Vec<_> = run_clippy(&cwd)?
+    let annotations: Vec<Annotation> = run_clippy(&cwd)?
         .lines()
         .map(serde_json::from_str)
         .filter_map(Result::ok)
@@ -79,7 +78,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
-fn run_clippy(dir: &PathBuf) -> Result<String, FromUtf8Error> {
+fn run_clippy(dir: &PathBuf) -> Result<String> {
     let output = Command::new("cargo")
         .current_dir(dir)
         .arg("clippy")
@@ -88,7 +87,7 @@ fn run_clippy(dir: &PathBuf) -> Result<String, FromUtf8Error> {
         .stderr(Stdio::null())
         .output()
         .expect("failed to run 'cargo clippy'");
-    String::from_utf8(output.stdout)
+    Ok(String::from_utf8(output.stdout)?)
 }
 
 fn to_annotation(json: Value) -> Option<Annotation> {
