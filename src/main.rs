@@ -1,14 +1,14 @@
 use anyhow::Result;
+use clap::Parser;
 use git2::Repository;
 use serde_json::Value;
 use std::env;
 use std::path::PathBuf;
 use std::process::{Command, Stdio};
-use structopt::StructOpt;
 
 use code_insights::{Annotation, AnnotationBuilder, Annotations, ReportBuilder, Severity};
 
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 struct Options {
     /// The Bitbucket base URL
     #[structopt(short, long)]
@@ -24,7 +24,7 @@ struct Options {
 }
 
 fn main() -> Result<()> {
-    let options = Options::from_args();
+    let options = Options::parse();
 
     let cwd = env::current_dir()?;
     let repository = Repository::discover(&cwd)?;
